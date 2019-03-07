@@ -1,0 +1,54 @@
+[1] "/n/regal/bst262/pm25/200101_200312/GWR_PM25_NA_200101_200312-RH35-NoNegs.asc"
+[1] "/n/regal/bst262/pm25/200001_200212/GWR_PM25_NA_200001_200212-RH35-NoNegs.asc"
+[1] "/n/regal/bst262/pm25/200201_200412/GWR_PM25_NA_200201_200412-RH35-NoNegs.asc"
+[1] "/n/regal/bst262/pm25/200901_201112/GWR_PM25_NA_200901_201112-RH35-NoNegs.asc"
+OGR data source with driver:_200912/GWR_PM25_NA_200701_200912-RH35-NoNegs.asc" "/n/regal/bst262/pm25/200801_201012/GWR_PM25_NA_200801_201012-RH35-NoNegs.asc"
+
+
+SRI Shapefile OGR data source with driver:
+ Source: "./shape/ESRI Shapefile", layer: "tl_2010_us_state10"
+ with 
+52 Source: "features./shape/
+", layer: "It has 14 fieldstl_2010_us_state10
+"Integer64 fields read as strings:  
+ALAND10 AWATER10 with
+ 52 features
+It has 14 fields
+Integer64 fields read as strings:  ALAND10 AWATER10 
+OGR data source with driver: ESRI Shapefile 
+Source: "./shape/", layer: "tl_2010_us_state10"
+with 52 features
+It has 14 fields
+Integer64 fields read as OGR data source with driver: ESRI Shapefile 
+Source: "./shape/", layer: "tl_2010_us_state10"
+with 52 features
+It has 14 fields
+Integer64 fields read as strings:  ALAND10 AWATER10 
+strings:  ALAND10 AWATER10 
+", layer: "Source: "tl_2010_us_state10tl_2010_us_state10./shape/""", layer: "
+
+tl_2010_us_state10withwith " 52
+52 with features features
+52
+It has It has features 14
+14  fieldsIt hasfields
+ 
+Integer64 fields read as strings:  14Integer64 fields read as strings:  ALAND10 AWATER10 ALAND10 AWATER10  fields
+
+
+Integer64 fields read as strings:  ALAND10 AWATER10 
+r:OGR data source with driver:   ESRI Shapefile ESRI ShapefileESRI Shapefile
+  Source: "./shape/", layer: "
+
+tl_2010_us_state10Source: "Source: ""
+./shape/./shape/with ", layer: "", layer: "52tl_2010_us_state10tl_2010_us_state10 ""features
+
+
+withwithIt has   145252   fieldsfeaturesfeatures
+
+
+Integer64 fields read as strings: It hasIt has   ALAND10 AWATER10 1414
+  fieldsfields
+
+Integer64 fields read as strings: Integer64 fields read as strings:   ALAND10 AWATER10 ALAND10 AWATER10
+ 

@@ -1,0 +1,95 @@
+---
+title: "BST.262 HW#2, ex. 3"
+author: "C.V. Cosgriff"
+---
+
+Q1. Complete, AWS screenshots in aws-setup-screnshots folder.
+
+Q2. Complete, AWS Linux server configured with mongoDB, R, and mongolite. 
+    Screenshots in aws-setup-screnshots folder.
+    
+Q3. To programmatically retrieve the JSON files, I used bash. We can then
+    import them trivially with mongoimport. I've attached a screenshot of 
+    these commands being run on AWS as well in the aws-setup-screnshots folder.
+```{bash eval = FALSE}
+wget https://www.dropbox.com/s/3nobbupqws7llxu/heart-rate.json
+wget https://www.dropbox.com/s/kpmkqyx85dugfho/step-count.json
+mongoimport step-count.json --db "homework"
+mongoimport heart-rate.json --db "homework"
+```
+
+Q4. Calculate the average daily heart rate and average daily step count for 
+    every participant, and then save the result to the github directory.
+```{r, warning = FALSE, message = FALSE}
+library(mongolite)
+library(dplyr)
+library(lubridate)
+library(ggplot2)
+
+# Create a connection to the two mongo collections
+hr_col <- mongo(db = "homework", url = "mongodb://localhost", 
+                collection = "heart-rate")
+sc_col <- mongo(db = "homework", url = "mongodb://localhost", 
+                collection = "step-count")
+
+# Then pull the data out; I like having all of the data so I can explore it with
+#  dplyr as needed.
+hr_q <- hr_col$find('{}')
+sc_q <- sc_col$find('{}')
+
+# Generate a data frame for the two collections; we'll need the user ID, the
+# respective value of interest, and the date/time for each recording in order
+# to properly merge the data.
+hr_df <- data.frame(user = as.character(hr_q$header$patient_business_id), 
+                    hr = hr_q$body$heart_rate$value, 
+                    rec_date = ymd_hms(hr_q$body$effective_time_frame$time_interval$start_date_time))
+sc_df <- data.frame(user = as.character(sc_q$header$patient_business_id), 
+                    sc = sc_q$body$step_count, 
+                    rec_date = ymd_hms(sc_q$body$effective_time_frame$time_interval$start_date_time))
+
+# Finally to calculate the daily average we use dplyr to group and summarise the
+# data.
+hr_df_avg <- hr_df %>% mutate(day = as_date(rec_date)) %>% select(-rec_date) %>%
+  group_by(user, day) %>% summarise(hr_avg = mean(hr))
+sc_df_avg <- sc_df %>% mutate(day = as_date(rec_date)) %>% select(-rec_date) %>%
+  group_by(user, day) %>% summarise(sc_avg = mean(sc))
+
+# We can now join on user and the day to merge these two data sets
+mhealth <- inner_join(hr_df_avg, sc_df_avg, by = c("user", "day"))
+
+# Finally, we write the result.
+write.csv(mhealth, "steps_vs_hr_avg.csv")
+```
+
+The file steps_vs_hr_avg.csv in the local directory contains the results for Q4.
+
+Q5. Use the dataset from Q3 to generate a scatter plot comparing heart rate to
+    step count. I believe this refers to the full dataset, not the average, and
+    so I'll begin with that. We can start with hr_df and sc_df in the code 
+    above, merge them by date/time and user, and then use ggplot2 to generate
+    the plot. The requested screenshot is saved to the local directory as 
+    scatter_plot.png.
+```{r warning = FALSE, message = FALSE}
+hr_sc_df <- inner_join(hr_df, sc_df, by = c("user", "rec_date"))
+
+library(dslabs) # For Rafa's theme
+ds_theme_set() # Really like Rafa's minimalist theme from BST.260
+ggplot(hr_sc_df) + geom_point(aes(x = sc, y = hr), alpha = 0.5) + 
+  geom_smooth(aes(x = sc, y = hr), method = "lm") + xlab("Step Count") +
+  ylab("Heart Rate") + ggtitle("Heart Rate vs. Step Count")
+```
+    
+Out of curiousity, I also generated the plot for the averages, but the correlation
+is less striking:
+
+```{r}
+library(dslabs) # For Rafa's theme
+ds_theme_set() # Really like Rafa's minimalist theme from BST.260
+library(ggplot2)
+ggplot(mhealth) + geom_point(aes(x = sc_avg, y = hr_avg), alpha = 0.5) + 
+  geom_smooth(aes(x = sc_avg, y = hr_avg), method = "lm") + xlab("Average Step Count") +
+  ylab("Average Heart Rate") + ggtitle("Avg. Heart Rate vs. Avg. Step Count")
+```
+
+I did not save this one to the local directory, as it was not part of the 
+assignment.

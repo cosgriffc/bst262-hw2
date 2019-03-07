@@ -1,0 +1,164 @@
+---
+title: "BST.262 HW#2, ex. 2"
+author: "C.V. Cosgriff"
+---
+
+Q1. Download the US state shape data.
+
+Because tigris isn't on odyssey, it was initially run to get the path to the 
+500k files and then downloaded directly with R as shown. As is mentioned in Q2
+more elaborately, it was then unzipped and stored locally for use in subsequent
+portions of this exercise.
+
+```{r}
+download.file("https://www2.census.gov/geo/tiger/TIGER2010/STATE/2010/tl_2010_us_state10.zip", "tl_2010_us_state10.zip")
+```
+
+_code to unzip it and move_
+```{bash, eval = FALSE}
+unzip tl_2010_us_state10.zip
+mkdir shape
+mv tl* shape/
+```
+
+The shape folder was then moved to odyssey (and can be seen in my oddyssey folder).
+
+Q2.
+Below is a copy of the script, pm25-stateMeans.R, that I wrote to calculate the
+the mean pm25 level per state. It requires that the start year of the two year
+interval (e.g. 1998 for 1998-2000) be provided as an argument.
+
+This script was run on Odyssey using a SLURM script and a submission script to
+automate submitting all of the years we wanted to examine. The SLURM script is
+pm25-stateMeans.sh and the submission script is submit.sh, both of which are
+present in the odyssey directory (along with pm25-stateMeans.R).
+
+Note that the file downloaded in Q1 was downloaded directly, without tigris,
+and then unzipped and placed in the shape/ directory with bash (unzip, mkdir, 
+cp). This was done because Odyssey lacks the right version of a units library
+source package and as such tigris cannot be compiled because sf cannot be 
+compiled. rgdal, and its dependency, sp, did not suffer this issue, and were
+manually compiled after loading the gdal and geos modules. With the shape/
+directory uploaded to Odyssey rgdal was used to extract the state shape data.
+As this spares downloading the file multiple times it is actually more 
+efficient anyway.
+
+After calculation of the state pm25 mean levels, the data stored in a dataframe,
+and then written to a csv file titled for the appropriate interval. These files
+were then downloaded for use in Q3.
+
+```{r eval = FALSE}
+# pm25-stateMeans.R
+# author: C.V. Cosgriff, Harvard Chan School
+#
+# 23 December 2017
+#
+# This R script calculates the mean pm25 levels by state. Because the extraction
+# results in a lot of negative values, we first clean the data before 
+# calculating the state mean.
+
+args = commandArgs(trailingOnly = TRUE)
+if (length(args) < 1) {
+  stop("This script requires a start year to run.", call.=FALSE)
+}
+
+startYear <- args[1]
+endYear <- as.numeric(startYear) + 2 # The data is formatted as a two year interval
+
+# The data directory provided for the assignment on Odyssey
+data_dir <- "/n/regal/bst262/pm25"
+
+# Use the years, data directory, and the structure of the data directory to 
+# generate a path to the appropriate pm25 data file.
+coding <- paste0(startYear, "01_", endYear, "12")
+file_path <- paste0(data_dir, "/", coding, "/", "GWR_PM25_NA_", coding, "-RH35-NoNegs.asc")
+
+# Output the path, useful for debugging
+print(file_path)
+
+library(raster)
+library(rgdal) # requires module for gdal and geos to be loaded as well
+
+# Function to calculate the mean pm25 level by state given the full extraction
+# as an input, x. Because of the presence of negative values at some points in 
+# the extraction, and because we don't want those points to distort our mean,
+# we use sapply to set any value that is below 0 to NA, and then calculate the
+# mean with na.rm = TRUE. 
+state_mean <- function(x) {
+  if (!is.null(x)) {
+    x <- sapply(x, function(y) if (!is.na(y) & y <= 0) y <- NA else y)
+    mean(x, na.rm = TRUE) 
+  }
+  else NA
+}
+
+state_data <- readOGR(dsn = "./shape/")
+pm25 <- raster(file_path)
+v <- extract(pm25, state_data)
+
+pm25_state_means <- unlist(lapply(v, state_mean))
+result <- data.frame(state = state_data$NAME10, mean_pm25 = pm25_state_means)
+
+write.csv(result, paste0("pm25-state_mean-", startYear, "-", endYear, ".csv"))
+```
+
+Q3. Create an animated image (in GIF format) of state-level PM2.5 values over time. [You can use the gganimate package if you wish.
+
+As is shown above, the output from the R script written to calculate state mean
+pm25 levels were written out as .csv files on Odyssey. The directory used to
+run everything on Odyssey was downloaded here via sftp and here we will create
+an animation based on these data after loading them into memory.
+
+```{r, warning = FALSE, message = FALSE}
+library(tidyverse)
+library(ggmap)
+library(gganimate)
+library(dslabs)
+ds_theme_set()
+
+# Load the resulst from odyssey
+# We'll start with 1998 manually so as to initialize a data frame with the state
+# names and the first column, and then use a for loop to nimbly gather the rest.
+
+state_pm25 <- read_csv("./odyssey/pm25-state_mean-1998-2000.csv") %>% 
+  select(state, mean_pm25 = mean_pm25) %>% mutate(rec_year = 1998)
+
+years <- c(1999:2010)
+
+for (year in years) {
+  file_path <- paste0("./odyssey/pm25-state_mean-", year, "-", year + 2, ".csv")
+  tmp <- read_csv(file_path) %>% mutate(rec_year = year) %>%
+    select(state, mean_pm25 = mean_pm25, rec_year)
+  state_pm25 <- rbind(state_pm25, tmp)
+}
+
+# Now that we have the particulate matter in a dataframe we can load up a US
+# map polygaon.
+states <- map_data("state")
+
+# We have to do a little renaming in our pm25 data so that we can use inner_join
+state_pm25$state <- tolower(state_pm25$state)
+colnames(state_pm25)[1] <- "region"
+
+# Then we generate our map data frame
+map_anim <- inner_join(states, state_pm25)
+
+p <- ggplot(data = map_anim) + 
+  geom_polygon(aes(x = long, y = lat, fill = mean_pm25, group = group, 
+                   frame = rec_year), color = "white") + 
+  coord_fixed(1.3) +
+  theme(axis.title.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank()) +
+  guides(fill = guide_legend(title = "Mean pm25 Level")) +
+  ggtitle("Mean pm25 Level by State")
+
+gganimate(p, filename = "state-pm25-by_year.gif")
+```
+
+The final gif is stored in the local directory as "state_pm25-by_year.gif"
+
+

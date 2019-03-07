@@ -1,0 +1,103 @@
+Loading required package: methods
+Loading required package: methods
+Loading required package: sp
+Loading required package: sp
+Loading required package: methods
+Loading required package: metLoading required package: methods
+Loading required package: sp
+rgdal: version: 1.2-16, (SVN revision 701)
+ Geospatial Data Abstraction Library extensions to R successfully loaded
+ Loaded GDAL runtime: GDAL 2.2.0, released 2017/04/28
+ Path to GDAL shared files: /n/sw/fasrcsw/apps/Core/gdal/2.2.0-fasrc01/share
+ GDAL binary built with GEOS: FALSE 
+ Loaded PROJ.4 runtime: Rel. 4.9.2, 08 September 2015, [PJ_VERSION: 492]
+ Path to PROJ.4 shared files: /n/sw/fasrcsw/apps/Core/proj/4.9.2-fasrc01/lib64
+ Linking to sp version: 1.2-5 
+traction Library extensions to R successfully loaded
+ Loaded GDAL runtime: GDAL 2.2.0, released 2017/04/28
+ Path to GDAL shared files: /n/sw/fasrcsw/apps/Core/gdal/2.2.0-fasrc01/share
+ GDAL binary built with GEOS: FALSE 
+ Loaded PROJ.4 runtime: Rel. 4.9.2, 08 September 2015, [PJ_VERSION: 492]
+ Path to PROJ.4 shared files: /n/sw/fasrcsw/apps/Core/proj/4.9.2-fasrc01/lib64
+ Linking to sp version: 1.2-5 
+rgdal: version: 1.2-16, (SVN rgdal: version: 1.2-16, (SVN revision 701)
+ Geospatial Data Abstraction Library extensions to R successfully loaded
+ Loaded GDAL runtime: GDAL 2.2.0, released 2017/04/28
+ Path to GDAL shared files: /n/sw/fasrcsw/apps/Core/gdal/2.2.0-fasrc01/share
+ GDAL binary built with GEOS: FALSE 
+ Loaded PROJ.4 runtime: Rel. 4.9.2, 08 September 2015, [PJ_VERSION: 492]
+ Path to PROJ.4 shared files: /n/sw/fasrcsw/apps/Core/proj/4.9.2-fasrc01/lib64
+ Linking to sp version: 1.2-5 
+rgdal: version: 1.2-16, (SVN revision 701)
+ Geospatial Data Abstraction Library extensions to R successfully loaded
+ Loaded GDAL runtime: GDAL 2.2.0, released 2017/04/28
+ Path to GDAL shared files: /n/sw/fasrcsw/apps/Core/gdal/2.2.0-fasrc01/share
+ GDAL binary built with GEOS: FALSE 
+ Loaded PROJ.4 runtime: Rel. 4.9.2, 08 September 2015, [PJ_VERSION: 492]
+ Path to PROJ.4 shared files: /n/sw/fasrcsw/apps/Core/proj/4.9.2-fasrc01/lib64
+ Linking to sp version: 1.2-5 
+rgdal: version: 1.2-16, (SVN revision 701)
+ Geospatial Data Abstraction Library extensions to R successfully loaded
+ Loaded GDAL runtime: GDAL 2.2.0, released 2017/04/28
+ Path to GDAL shared files: /n/sw/fasrcsw/apps/Core/gdal/2.2.0-fasrc01/share
+ GDAL binary built with GEOS: FALSE 
+ Loaded PROJ.4 runtime: Rel. 4.9.2, 08 September 2015, [PJ_VERSION: 492]
+ Path to PROJ.4 shared files: /n/sw/fasrcsw/apps/Core/proj/4.9.2-fasrc01/lib64
+ Linking to sp version: 1.2-5 
+rgdal: version: 1.2-16, (SVN revision 701)
+ Geospatial Data Abstraction Library extensions to R successfully loaded
+ Loaded GDAL runtime: GDAL 2.2.0, released 2017/04/28
+ Path to GDAL shared files: /n/sw/fasrcsw/apps/Core/gdal/2.2.0-fasrc01/share
+ GDAL binary built with GEOS: FALSE 
+ Loaded PROJ.4 runtime: Rel. 4.9.2, 08 September 2015, [PJ_VERSION: 492]
+ Path to PROJ.4 shared files: /n/sw/fasrcsw/apps/Core/proj/4.9.2-fasrc01/lib64
+ Linking to sp version: 1.2-5 
+rgdal: version: 1.2-16, (SVN revision 701)
+ Geospatial Data Abstraction Library extensions to R successfully loaded
+ Loaded GDAL runtime: GDAL 2.2.0, released 2017/04/28
+ Path to GDAL shared files: /n/sw/fasrcsw/apps/Core/gdal/2.2.0-fasrc01/share
+ GDAL binary built with GEOS: FALSE 
+ Loaded PROJ.4 runtime: Rel. 4.9.2, 08 September 2015, [PJ_VERSION: 492]
+ Path to PROJ.4 shared files: /n/sw/fasrcsw/apps/Core/proj/4.9.2-fasrc01/lib64
+ Linking to sp version: 1.2-5 
+rgdal: version: 1.2-16, (SVN revision 701)
+ Geospatial Data Abstraction Library extensions to R successfully loaded
+ Loaded GDAL runtime: GDAL 2.2.0, released 2017/04/28
+ Path to GDAL shared files: /n/sw/fasrcsw/apps/Core/gdal/2.2.0-fasrc01/share
+ GDAL binary built with GEOS: FALSE 
+ Loaded PROJ.4 runtime: Rel. 4.9.2, 08 September 2015, [PJ_VERSION: 492]
+ Path to PROJ.4 shared files: /n/sw/fasrcsw/apps/Core/proj/4.9.2-fasrc01/lib64
+ Linking to sp version: 1.2-5 
+Warning message:
+In .local(x, y, ...) :
+  Transforming SpatialPolygons to the CRS of the Raster
+Warning message:
+In .local(x, y, ...) :
+  Transforming SpatialPolygons to the CRS of the Raster
+Warning message:
+In .local(x, y, ...) :
+  Transforming SpatialPolygons to the CRS of the Raster
+Warning message:
+In .local(x, y, ...) :
+  Transforming SpatialPolygons to the CRS of the Raster
+Warning message:
+In .local(x, y, ...) :
+  Transforming SpatialPolygons to the CRS of the Raster
+Warning message:
+In .local(x, y, ...) :
+  Transforming SpatialPolygons to the CRS of the Raster
+Warning message:
+In .local(x, y, ...) :
+  Transforming SpatialPolygons to the CRS of the Raster
+Warning message:
+In .local(x, y, ...) :
+  Transforming SpatialPolygons to the CRS of the Raster
+Warning message:
+In .local(x, y, ...) :
+  Transforming SpatialPolygons to the CRS of the Raster
+Warning message:
+In .local(x, y, ...) :
+  Transforming SpatialPolygons to the CRS of the Raster
+Warning message:
+In .local(x, y, ...) :
+  Transforming SpatialPolygons to the CRS of the Raster

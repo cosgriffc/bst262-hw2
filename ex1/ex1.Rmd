@@ -1,0 +1,185 @@
+---
+title: "BST.262 HW#2 ex1"
+author: "C.V. Cosgriff"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(readxl)
+```
+
+## Q1: Read data about opioid drug names into a dataframe
+```{r}
+opioid <- read_xlsx("./data/PartD_Prescriber_PUF_NPI_15_Drug_Category_Lists.xlsx", 
+                    sheet = 2, range = "B3:B111")
+```
+
+## Q2: Load medicare data into spark cluster
+```{r, message=FALSE, warning=FALSE}
+# Load sparklyr and create cluster
+library(sparklyr)
+
+# Increase memory available to prevent crashing on the spark collect stage
+# per the documentation.
+Sys.setenv("SPARK_MEM" = "8g")
+config <- spark_config()
+config$spark.driver.memory <- "4G"
+config$spark.executor.memory <- "4G"
+
+sc <- spark_connect(master = "local", config = config)
+
+partd_tbl <- spark_read_csv(sc = sc, name = "partd", 
+               path = "./data/PartD_Prescriber_PUF_NPI_Drug_15.txt", 
+               header = TRUE, delimiter = "\t")
+```
+
+## Q3: Calculate opioid prescribing rate by state
+
+The goal is to calculate the opioid prescribing rate by state, where the rate is
+defined as:
+
+"opioid prescribing rate reflects the percentage of a prescriber’s total Part D claims that are opioid prescriptions"
+
+From there, we simply write out the dataframe.
+
+Without spark the code for this would look as follows:
+
+```{r eval=FALSE}
+partd %>% mutate(opioid = ifelse(drug_name %in% opioid$`Drug Name`, "opioid_claim", "non_opioid_claim")) %>%
+  group_by(opioid, nppes_provider_state) %>% 
+  summarise(total_claim_sum = sum(total_claim_count)) %>%
+  spread("opioid", "total_claim_sum") %>%
+  mutate(opioid_rate = opioid_claim / (opioid_claim + non_opioid_claim))
+```
+
+We can count on the dplyr verbs by using  sparklyR , but not the
+tidyr verbs. Unfortunately there are multiple open pull requests regarding
+implementing these in spark, (e.g. https://github.com/rstudio/sparklyr/issues/252),
+with little movement since 2016.
+
+To work around this, I'll use the opioid names to flag each claim as opioid
+or not, as above, and then summarize by state and opioid; then I'll create
+two dataframes for opioids and non-opioids, renaming the claim count columns.
+From there, they can be joined, achieving the same result as tidyr::gather.
+
+With that, the rate can be calculated, and the final dataframe can be written
+to a CSV to complete Q3. 
+
+```{r}
+state_sum <- partd_tbl %>% 
+  mutate(opioid = ifelse(drug_name %in% opioid$`Drug Name`, TRUE, FALSE)) %>% 
+  group_by(nppes_provider_state, opioid) %>% 
+  summarise(total_claim_sum = sum(total_claim_count))
+
+
+opi <- state_sum %>% filter(opioid == TRUE) %>% mutate(total_opioid_claim = total_claim_sum) %>%
+  select(nppes_provider_state, total_opioid_claim)
+no_opi <- state_sum %>% filter(opioid == FALSE) %>% mutate(total_other_claim = total_claim_sum) %>%
+  select(nppes_provider_state, total_other_claim)
+
+state_sum <- inner_join(opi, no_opi, by = "nppes_provider_state") %>% 
+  mutate(opioid_rate = (total_opioid_claim / (total_opioid_claim + total_other_claim)) * 100)
+
+write.csv(state_sum, "state.opioidRate.csv")
+```
+
+The final result of Q3 is saved locally as state.opioidRate.csv.
+
+Q4: Generate an interactive map with the data.
+```{r}
+# We use the leaflet library to generate a choriopleth
+library(leaflet)
+
+# My mapbox token for ccosgriff@hsph.harvard.edu account
+mapbox_token <- "pk.eyJ1IjoiY2Nvc2dyaWZmIiwiYSI6ImNqYmhzeXQwajBsbmIyd29mY2xrcTlzM2EifQ.rlOgbpSddBAcyOMkVW7YhQ"
+
+# Created map using the leafly guide from RStduio website; attained us-states.json
+# from github.
+states <- geojsonio::geojson_read("json/us-states.json", what = "sp")
+
+# Load the opioid rate data we just calculated; to get it working with our map
+# data requires we flip the abbreviations to state names, and to do this we need
+# to add PR and DC to the built in lists state.abb and stata.name
+state_sum <- read_csv("./state.opioidRate.csv") %>% 
+  select(nppes_provider_state, opioid_rate)
+names <- c(state.name, "Puerto Rico", "District of Columbia")
+abb <- c(state.abb, "PR", "DC")
+state_sum$nppes_provider_state <- names[match(state_sum$nppes_provider_state, abb)]
+state_sum <- state_sum %>% filter(nppes_provider_state %in% states$name)
+
+# Now we can get to generating the map
+state_sum$opioid_rate <- round(state_sum$opioid_rate, 2)
+bins <- round(quantile(state_sum$opioid_rate, probs = seq(0,1, by = (1/8)), 
+         na.rm = TRUE), 2)
+
+pal <- colorBin("YlOrRd", domain = state_sum$opioid_rate, bins = bins)
+
+labels <- sprintf(
+  "<strong>%s</strong><br/>Opioid Prescribing Rate: %g %%",
+  states$name, state_sum$opioid_rate
+) %>% lapply(htmltools::HTML)
+
+leaflet(states) %>%
+  setView(-96, 37.8, 4) %>%
+  addProviderTiles("MapBox", options = providerTileOptions(
+    id = "mapbox.light",
+    accessToken = mapbox_token)) %>%
+  addPolygons(
+    fillColor = ~pal(state_sum$opioid_rate),
+    weight = 2,
+    opacity = 1,
+    color = "white",
+    dashArray = "3",
+    fillOpacity = 0.7,
+    highlight = highlightOptions(
+      weight = 5,
+      color = "#666",
+      dashArray = "",
+      fillOpacity = 0.7,
+      bringToFront = TRUE),
+    label = labels,
+    labelOptions = labelOptions(
+      style = list("font-weight" = "normal", padding = "3px 8px"),
+      textsize = "15px",
+      direction = "auto")) %>%
+ addLegend(pal = pal, values = ~state_sum$opioid_rate, opacity = 0.7, title = "Opioid Prescribing Rate",
+   position = "bottomright")
+```
+
+Screenshots of this map are in the local directory, and the map can be interacted
+with by loading the knitted version of this file, also present in the local directory.
+
+Q5: Retrieve the total population by state (you can use the get_decennial function) to calculate the Medicare
+Part D opioid prescription rate per 10,000 people.
+```{r}
+library(tidycensus)
+census_key <- "febef4def24f726dcbd616a62ebcaa324a07b448" # key I requested with hsph email
+
+population <- get_decennial(geography = "state", variables = "H0100001",
+                            year = 2010, key = census_key) %>%
+  mutate(state_name = NAME) %>%
+  select(state_name, value)
+
+names <- c(state.name, "Puerto Rico", "District of Columbia")
+abb <- c(state.abb, "PR", "DC")
+population$state_name <- abb[match(population$state_name, names)]
+
+partd_tbl <- partd_tbl %>% select(state_name = nppes_provider_state, drug_name,
+                                  total_claim_count)
+
+partd_wpop <- partd_tbl %>% inner_join(population, by = "state_name", copy = TRUE)
+
+state_sum <- partd_wpop %>% 
+  mutate(opioid = ifelse(drug_name %in% opioid$`Drug Name`, TRUE, FALSE)) %>% 
+  filter(opioid == TRUE) %>%
+  group_by(state_name) %>% 
+  summarise(rate = sum(total_claim_count)/mean(value) * 10^4)
+
+write.csv(state_sum, "state.opiodRatePer10k.csv")
+```
+
+The file that completes Q5 is saved as state.opioidRatePer10k.csv in the local
+directory.
