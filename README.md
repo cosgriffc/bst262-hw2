@@ -1,2 +1,3 @@
-# homework2
-Template for homework 2
+# Computing for Big Data (BST.262), Harvard Chan School Spring 2018
+
+This repository contains the code for homework #2 of BST.262 led by Professor Christine Choirat. These projects constitute the final assignments of the course, and cover a range of tasks. The first example uses R on Spark to analyze a large set of Medicare claims. The second used Harvard's Odyssey cluster to analyze particulate matter data and generate an animation demonstrating how pollution changed in each state over time in the early 2000s; this was the most challenging of the assignments. The final example is brief, and entailed analyzing JSON data from a wearable.
